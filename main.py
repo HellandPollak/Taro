@@ -198,6 +198,7 @@ async def handle_question_input(message: Message):
 
 @router.message(F.web_app_data)
 async def handle_web_app_data(message: Message):
+    logging.info(f"Получено сообщение: {message}")
     """Обработчик данных из мини-приложения."""
     user_id = message.from_user.id
     try:
@@ -208,9 +209,9 @@ async def handle_web_app_data(message: Message):
         if not question or not cards:
             await message.answer("Ошибка: данные из мини-приложения неполные.")
             return
-
+        prompt = f"Вопрос: {question}\nКарты: {cards}\n\nДайте трактовку расклада."
         # Обработка данных
-        result = query_mistral_ai(question, cards)
+        result = query_mistral_ai(prompt)
         if "Ошибка API" not in result:
             cursor.execute("UPDATE users SET balance = balance - 1 WHERE user_id = ?", (user_id,))
             cursor.execute("UPDATE users SET current_question = NULL WHERE user_id = ?", (user_id,))
@@ -240,7 +241,7 @@ def query_mistral_ai(question, cards):
                 },
                 {
                     "role": "user",
-                    "content": f"Вопрос: {question}\nКарты: {cards}",
+                    "content": prompt,
                 },
             ],
             max_tokens=450
