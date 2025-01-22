@@ -6,6 +6,7 @@ from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, InlineKe
 from aiogram.filters import Command
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from mistralai import Mistral
+from urllib.parse import quote
 
 # Загружаем токен из .env файла
 import os
@@ -95,8 +96,6 @@ async def ask_question(message: Message):
     balance = cursor.fetchone()[0]
     if balance > 0:
         await message.answer("Напиши свой вопрос для расклада.")
-        cursor.execute("UPDATE users SET current_question = NULL WHERE user_id = ?", (user_id,))
-        conn.commit()
     else:
         buy_keyboard = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text="Приобрести 3 расклада за 50⭐", callback_data="buy_3")],
@@ -136,7 +135,6 @@ async def how_bot_works(message: Message):
         "Стоит ли мне идти на мероприятие?\n\n"
         "Пример выпавших карт:\n"
         "Влюбленные, справедливость, перевернутый паж кубков.\n"
-        
     )
 
 @router.message(lambda message: message.text.startswith("Количество раскладов"))
@@ -175,49 +173,35 @@ async def handle_get_free(callback_query):
         "Как только друг присоединится, вы получите 3 бесплатных расклада!"
     )
 
-@router.message(lambda message: True)
+@router.message()
 async def handle_question_input(message: Message):
     """Обработчик ввода вопроса."""
     user_id = message.from_user.id
-    cursor.execute("SELECT current_question FROM users WHERE user_id = ?", (user_id,))
-    current_question = cursor.fetchone()[0]
+    question = message.text
 
-    # Если текущий вопрос не задан, то это новый вопрос
-    if current_question is None:
-        question = message.text
-        cursor.execute("UPDATE users SET current_question = ? WHERE user_id = ?", (question, user_id))
-        conn.commit()
-        await message.answer("Теперь укажи три карты через запятую.")
-    else:
-        # Если текущий вопрос уже задан, передаем сообщение следующему обработчику
-        await handle_cards_input(message)
+    # Сохраняем вопрос в базе данных
+    cursor.execute("UPDATE users SET current_question = ? WHERE user_id = ?", (question, user_id))
+    conn.commit()
 
-@router.message(lambda message: True)
-async def handle_cards_input(message: Message):
-    """Обработчик ввода карт."""
+    # Открываем мини-приложение с передачей вопроса
+    web_app_url = f"https://hellandpollak.github.io/Taro/?question={quote(question)}"
+    web_app = WebAppInfo(url=web_app_url)
+    keyboard = ReplyKeyboardMarkup(
+        keyboard=[[KeyboardButton(text="Выбрать карты", web_app=web_app)]],
+        resize_keyboard=True
+    )
+    await message.answer("Нажмите кнопку ниже, чтобы выбрать карты.", reply_markup=keyboard)
+
+@router.message(F.web_app_data)
+async def handle_web_app_data(message: Message):
+    """Обработчик данных из мини-приложения."""
     user_id = message.from_user.id
-    cursor.execute("SELECT current_question FROM users WHERE user_id = ?", (user_id,))
-    current_question = cursor.fetchone()[0]
+    data = json.loads(message.web_app_data.data)  # Получаем вопрос и карты
+    question = data.get("question")
+    cards = data.get("cards")
 
-    # Если текущий вопрос задан, то это ввод карт
-    if current_question:
-        cards_input = message.text.strip()  # Убираем лишние пробелы в начале и конце
-        cards = [card.strip() for card in cards_input.split(",")]  # Разделяем по запятым и убираем пробелы
-
-        # Проверяем, что введено ровно три карты
-        if len(cards) != 3:
-            await message.answer("Пожалуйста, укажите ровно три карты через запятую.")
-            return
-
-        # Проверяем, что каждая карта не пустая
-        if any(card == "" for card in cards):
-            await message.answer("Названия карт не могут быть пустыми. Пожалуйста, укажите три карты через запятую.")
-            return
-
-        # Формируем строку с картами для отправки в Mistral AI
-        cards_str = ", ".join(cards)
-        result = query_mistral_ai(current_question, cards_str)
-
+    if question and cards:
+        result = query_mistral_ai(question, cards)
         if "Ошибка API" not in result:
             cursor.execute("UPDATE users SET balance = balance - 1 WHERE user_id = ?", (user_id,))
             cursor.execute("UPDATE users SET current_question = NULL WHERE user_id = ?", (user_id,))
