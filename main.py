@@ -1,16 +1,17 @@
-import asyncio
-import logging
-import sqlite3
-from aiogram import Bot, Dispatcher, Router
+from aiogram import Bot, Dispatcher, Router, F  # Добавьте F здесь
 from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.filters import Command
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from mistralai import Mistral
+from aiogram.types import WebAppInfo
 from urllib.parse import quote
-
-# Загружаем токен из .env файла
+import asyncio
+import logging
+import sqlite3
+import json
 import os
 from dotenv import load_dotenv
+
 
 load_dotenv()
 BOT_TOKEN = os.getenv("BOT_TOKEN")

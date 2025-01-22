@@ -137,8 +137,12 @@ function toggleCard(cardElement, index) {
 
 function submitCards() {
     const selectedCardNames = selectedCards.map(index => randomCards[index]);
-    Telegram.WebApp.sendData(selectedCardNames.join(", "));
-    Telegram.WebApp.close();
+    const data = {
+        question: question,
+        cards: selectedCardNames.join(", ")
+    };
+    Telegram.WebApp.sendData(JSON.stringify(data)); // Отправляем вопрос и карты
+    Telegram.WebApp.close(); // Закрываем мини-приложение
 }
 
 renderCards();
