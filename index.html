@@ -10,8 +10,9 @@
 </head>
 <body>
     <h1>Выберите 3 карты</h1>
-    <div id="cards-container"></div>
+    <div id="cards-container"></div> <!-- Контейнер для карт -->
 
+    <!-- Основной скрипт -->
     <script>
         // Убедимся, что SDK загружен и Telegram Web App инициализирован
         if (!window.Telegram || !Telegram.WebApp) {
@@ -24,18 +25,24 @@
         // Переменная вопроса
         const question = "Ваш вопрос?";
 
-        // Ваш основной скрипт
+        // Проверка, что контейнер для карт существует
         document.addEventListener("DOMContentLoaded", () => {
-            renderCards();
-
-            // Проверка, что контейнер для карт существует
             const container = document.getElementById("cards-container");
             if (!container) {
                 console.error("Контейнер для карт не найден.");
+                return;
+            }
+
+            // Вызов функции renderCards из script.js
+            if (typeof renderCards === "function") {
+                renderCards();
+            } else {
+                console.error("Функция renderCards не определена.");
             }
         });
     </script>
 
+    <!-- Подключение основного скрипта -->
     <script src="script.js"></script>
 </body>
 </html>

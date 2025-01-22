@@ -101,7 +101,7 @@ const cardImages = {
     "Шут": "assets/шут.png"
 };
 
-const question = "Ваш вопрос?";
+
 const selectedCards = [];
 const randomCards = allCards.sort(() => 0.5 - Math.random()).slice(0, 10);
 
