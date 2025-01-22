@@ -138,6 +138,7 @@ function toggleCard(cardElement, index) {
 
 function submitCards() {
     const selectedCardNames = selectedCards.map(index => randomCards[index]);
+    const question = "Ваш вопрос?"; // Убедитесь, что это строка
     const data = {
         question: question,
         cards: selectedCardNames.join(", ")

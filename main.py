@@ -179,6 +179,10 @@ async def handle_question_input(message: Message):
     user_id = message.from_user.id
     question = message.text
 
+    # Проверяем, что question - это строка
+    if not isinstance(question, str):
+        question = str(question)  # Преобразуем в строку, если это не строка
+
     # Сохраняем вопрос в базе данных
     cursor.execute("UPDATE users SET current_question = ? WHERE user_id = ?", (question, user_id))
     conn.commit()
