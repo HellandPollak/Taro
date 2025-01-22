@@ -12,7 +12,6 @@ import json
 import os
 from dotenv import load_dotenv
 
-
 load_dotenv()
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")
@@ -138,7 +137,7 @@ async def how_bot_works(message: Message):
         "Влюбленные, справедливость, перевернутый паж кубков.\n"
     )
 
-@router.message(lambda message: message.text.startswith("Количество раскладов"))
+@router.message(lambda message: message.text and message.text.startswith("Количество раскладов"))
 async def check_balance(message: Message):
     """Обработчик кнопки 'Количество раскладов'."""
     user_id = message.from_user.id
@@ -197,11 +196,16 @@ async def handle_question_input(message: Message):
 async def handle_web_app_data(message: Message):
     """Обработчик данных из мини-приложения."""
     user_id = message.from_user.id
-    data = json.loads(message.web_app_data.data)  # Получаем вопрос и карты
-    question = data.get("question")
-    cards = data.get("cards")
+    try:
+        data = json.loads(message.web_app_data.data)  # Получаем данные
+        question = data.get("question")
+        cards = data.get("cards")
 
-    if question and cards:
+        if not question or not cards:
+            await message.answer("Ошибка: данные из мини-приложения неполные.")
+            return
+
+        # Обработка данных
         result = query_mistral_ai(question, cards)
         if "Ошибка API" not in result:
             cursor.execute("UPDATE users SET balance = balance - 1 WHERE user_id = ?", (user_id,))
@@ -211,6 +215,9 @@ async def handle_web_app_data(message: Message):
             await message.answer(f"Ваш расклад:\n\n{result}", reply_markup=updated_menu)
         else:
             await message.answer("Произошла ошибка при обработке вашего запроса. Пожалуйста, попробуйте еще раз.")
+    except Exception as e:
+        logging.error(f"Ошибка при обработке данных из мини-приложения: {e}")
+        await message.answer("Произошла ошибка. Пожалуйста, попробуйте ещё раз.")
 
 def query_mistral_ai(question, cards):
     """Функция для запроса к Mistral AI."""

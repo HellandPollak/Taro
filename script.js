@@ -79,11 +79,11 @@ const cardImages = {
     "Маг": "assets/маг.png",
     "Мир": "assets/мир.png",
     "Отшельник": "assets/отшельник.png",
-    "Повешенный": "assets/повешанный.png",
-    "Паж Дунариев": "assets/пяж_дунариев.png",
-    "Паж Жезлов": "assets/пяж_жезлов.png",
-    "Паж Кубков": "assets/пяж_кубков.png",
-    "Паж Мечей": "assets/пяж_мечей.png",
+    "Повешенный": "assets/повешенный.png",
+    "Паж Дунариев": "assets/паж_дунариев.png",
+    "Паж Жезлов": "assets/паж_жезлов.png",
+    "Паж Кубков": "assets/паж_кубков.png",
+    "Паж Мечей": "assets/паж_мечей.png",
     "Рыцарь Дунариев": "assets/рыцарь_дунариев.png",
     "Рыцарь Жезлов": "assets/рыцарь_жезлов.png",
     "Рыцарь Кубков": "assets/рыцарь_кубков.png",
@@ -101,6 +101,7 @@ const cardImages = {
     "Шут": "assets/шут.png"
 };
 
+const question = "Ваш вопрос?";
 const selectedCards = [];
 const randomCards = allCards.sort(() => 0.5 - Math.random()).slice(0, 10);
 
