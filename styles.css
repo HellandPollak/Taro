@@ -2,8 +2,13 @@ body {
     font-family: Arial, sans-serif;
     text-align: center;
     padding: 20px;
-    background-color: #1f1f44;
+    /* background-color: #29152e; */ /* Закомментируйте или удалите эту строку */
+    background-image: url('assets/background.png'); /* Укажите путь к вашему изображению */
+    background-size: cover; /* Изображение будет масштабироваться, чтобы покрыть весь экран */
+    background-repeat: no-repeat; /* Изображение не будет повторяться */
+    background-position: center; /* Изображение будет центрировано */
     margin: 0;
+    height: 100vh;
 }
 
 h1 {
